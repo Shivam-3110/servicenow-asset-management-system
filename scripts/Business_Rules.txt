@@ -1,0 +1,44 @@
+          (Business Rules on Asset Request Table )
+
+ 1 -Allocate on approval 
+    When -> After 
+    (function executeRule(current, previous /*null when async*/) {
+ var asset = new GlideRecord('x_1997620_it_ass_0_asset');
+ if(asset.get(current.allocated_asset)){
+	asset.status='allocated';
+	asset.assigned_to = current.requested_by;
+	asset.update();
+ }
+
+})(current, previous);
+
+2- Release on return or rejection
+     When -> After 
+(function executeRule(current, previous /*null when async*/) {
+ 
+ var asset = new GlideRecord('x_1997620_it_ass_0_asset');
+ if(asset.get(current.allocated_asset)){
+	asset.status = 'available';
+	asset.assigned_to='';
+	asset.update();
+ }
+
+})(current, previous);
+
+3- Validate before approving
+   when -> before
+   (function executeRule(current, previous /*null when async*/) {
+
+var asset = new GlideRecord('x_1997620_it_ass_0_asset');
+ if(asset.get(current.allocated_asset)){
+	if(asset.status != 'available'){
+		gs.addErrorMessage('This asset is not available-pick a different one');
+		current.setAbortAction(true);
+
+	}
+ }
+else{
+	gs.addErrorMessage('No asset selected')
+	current.setAbortAction(true);
+}
+})(current, previous);
